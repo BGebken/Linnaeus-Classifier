@@ -15,6 +15,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 clf = joblib.load(filename='MasterModel.pkl')
 # load the vectorizer
 vectorizer = joblib.load(filename='vectorizer.pkl')
+
+#FIX THIS LINE - needs to read from a POST request
 # read the incoming data
 df = pd.read_csv(r'test.csv')
 
@@ -34,4 +36,5 @@ top_probabilities = y_pred_prob[np.arange(len(top_positions)), top_positions]
 df.loc[:, ('Probability')] = top_probabilities
 df.head()
 
+#FIX - need to update this so that it provides results back a returned value (integrate with API) 
 df.to_excel('test2_autocoded.xlsx')
