@@ -6,7 +6,7 @@ import pandas as pd
 
 df = pd.read_csv(r'FullTraining.csv')
 
-# split the data frame into separate test, validation, and training dataframes based on the year of the incident
+# split the data frame into separate test, validation, and training data frames
 df_training = df[df['CLASS'] <= 'TRAINING']
 df_validation = df[df['CLASS'] == 'VALIDATION']
 df_test = df[df['CLASS'] == 'TEST']
@@ -23,8 +23,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 # Create an instance of the CountVectorizer object
 vectorizer = CountVectorizer()
 
-# Use the narratives in our training data to create the vocabulary that will
-# be represented by our feature vectors. This is remembered by the vectorizer.
+# Use the narratives in training data to create the vocabulary that will
+# be represented by  feature vectors. This is remembered by the vectorizer.
 vectorizer.fit(df_training['NARRATIVE'])
 
 print('Our vectorizer has defined an input vector with %s elements' % len(vectorizer.vocabulary_))
@@ -46,13 +46,13 @@ print(vector.todense())
 
 from sklearn.linear_model import LogisticRegression
 
-# y_training contains the codes associated with our training narratives
+# y_training contains the codes associated with training narratives
 y_training = df_training['CODE']
 
-# we create an instance of the LogisticRegression model and set regularization to 1.0
+# create an instance of the LogisticRegression model and set regularization to 1.0
 clf = LogisticRegression(C=10)
 
-# we fit the model to our training data (ie. we calculate the weights)
+# fit the model to our training data (ie. calculate the weights)
 clf.fit(x_training, y_training)
 
 print(clf.coef_.shape)
@@ -81,9 +81,6 @@ word = feature_mapper[feature_index]
 print('The word with the heighest weight for code %s is "%s"' % (code, word))
 print('It has a weight of:', clf.coef_[code_index, feature_index])
 
-
-
-
 from sklearn.metrics import accuracy_score, f1_score
 
 # Convert the validation narratives to a feature matrix
@@ -99,7 +96,6 @@ macro_f1 = f1_score(y_validation, y_validation_pred, average='macro')
 print('accuracy = %s' % (accuracy))
 print('macro f1 score = %s' % (macro_f1))
 
-
 clf = LogisticRegression(C=1)
 clf.fit(x_training, y_training)
 
@@ -114,7 +110,6 @@ print('accuracy on validation data is: %s' % validation_accuracy)
 vectorizer2 = CountVectorizer(min_df=5, ngram_range=(1,2))
 vectorizer2.fit(df_training['NARRATIVE'])
 print(len(vectorizer2.vocabulary_))
-
 
 x_training = vectorizer2.transform(df_training['NARRATIVE'])
 clf = LogisticRegression(C=1)
@@ -135,7 +130,6 @@ joblib.dump(clf, filename='LRclf.pkl')
 # save the vectorizer object as vectorizer.pkl
 joblib.dump(vectorizer2, filename='vectorizer.pkl')
 
-
 from sklearn.externals import joblib
 # import the objects used by our saved vectorizer and classifier
 from sklearn.linear_model import LogisticRegression
@@ -145,7 +139,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 clf = joblib.load(filename='LRclf.pkl')
 # load the vectorizer
 vectorizer = joblib.load(filename='vectorizer.pkl')
-
 
 
 df = pd.read_csv(r'test.csv')
