@@ -4,7 +4,7 @@ from pprint import pprint
 import numpy as np
 import pandas as pd
 
-df = pd.read_csv(r'Large_Training.csv')
+df = pd.read_csv(r'Large_Training.csv', nrows=200, converters={'CNTNTN_CLSFCN_ID': lambda x: str(x)})
 
 # split the data frame into separate test, validation, and training data frames
 def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
@@ -19,32 +19,29 @@ def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=No
     return train, validate, test
 
 
-TRAIN, VALIDATION, TEST = train_validate_test_split(df)
-
-
-# df_test = df[df['CLASS'] == 'TEST']
-
+TRAINING, VALIDATION, TEST = train_validate_test_split(df)
 print('''Data set sizes:
     TEST: %s
     VALIDATION: %s
     TRAINING: %s''' % (len(TEST), len(VALIDATION), len(TEST)))
-
 # Data has now been imported
 
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Create an instance of the CountVectorizer object
 vectorizer = CountVectorizer()
 
 # Use the narratives in training data to create the vocabulary that will
 # be represented by  feature vectors. This is remembered by the vectorizer.
-vectorizer.fit(df_training['NARRATIVE'])
+#TRAINING.fit_transform(df['CLMANT_TXT'].values.astype('str'))  ## Even astype(str) would work
+vectorizer.fit(TRAINING['CNTNTN_CLSFCN_ID'])
 
 print('Our vectorizer has defined an input vector with %s elements' % len(vectorizer.vocabulary_))
 pprint(vectorizer.vocabulary_)
 
 # Convert the training narratives into their matrix representation.
-x_training = vectorizer.transform(df_training['NARRATIVE'])
+x_training = vectorizer.transform(TRAINING['CNTNTN_CLSFCN_TXT'])
 
 print('''''''''''')
 print(x_training.shape)
@@ -60,7 +57,7 @@ print(vector.todense())
 from sklearn.linear_model import LogisticRegression
 
 # y_training contains the codes associated with training narratives
-y_training = df_training['CODE']
+y_training = TRAINING['CNTNTN_CLSFCN_ID']
 
 # create an instance of the LogisticRegression model and set regularization to 1.0
 clf = LogisticRegression(C=10)
@@ -97,13 +94,13 @@ print('It has a weight of:', clf.coef_[code_index, feature_index])
 from sklearn.metrics import accuracy_score, f1_score
 
 # Convert the validation narratives to a feature matrix
-x_validation = vectorizer.transform(df_validation['NARRATIVE'])
+x_validation = vectorizer.transform(VALIDATION['CLMANT_TXT'])
 
 # Generate predicted codes for our validation narratives
 y_validation_pred = clf.predict(x_validation)
 
 # Calculate how accurately these match the true codes
-y_validation = df_validation['CODE']
+y_validation = VALIDATION['CNTNTN_CLSFCN_TXT']
 accuracy = accuracy_score(y_validation, y_validation_pred)
 macro_f1 = f1_score(y_validation, y_validation_pred, average='macro')
 print('accuracy = %s' % (accuracy))
@@ -121,17 +118,17 @@ validation_accuracy = accuracy_score(y_validation, y_validation_pred)
 print('accuracy on validation data is: %s' % validation_accuracy)
 
 vectorizer2 = CountVectorizer(min_df=5, ngram_range=(1,2))
-vectorizer2.fit(df_training['NARRATIVE'])
+vectorizer2.fit(TRAINING['CLMANT_TXT'])
 print(len(vectorizer2.vocabulary_))
 
-x_training = vectorizer2.transform(df_training['NARRATIVE'])
+x_training = vectorizer2.transform(TRAINING['CLMANT_TXT'])
 clf = LogisticRegression(C=1)
 clf.fit(x_training, y_training)
 y_training_pred = clf.predict(x_training)
 training_accuracy = accuracy_score(y_training, y_training_pred)
 print('accuracy on training data is: %s' % training_accuracy)
 
-x_validation = vectorizer2.transform(df_validation['NARRATIVE'])
+x_validation = vectorizer2.transform(VALIDATION['CLMANT_TXT'])
 y_validation_pred = clf.predict(x_validation)
 validation_accuracy = accuracy_score(y_validation, y_validation_pred)
 print('accuracy on validation data is: %s' % validation_accuracy)
@@ -154,8 +151,8 @@ clf = joblib.load(filename='LRclf.pkl')
 vectorizer = joblib.load(filename='vectorizer.pkl')
 
 
-df = pd.read_csv(r'test.csv')
-x_test = vectorizer.transform(df_test['NARRATIVE'])
+df_test = pd.read_csv(r'RAW_TEST.csv', converters={'CLMANT_TXT': lambda x: str(x)})
+x_test = vectorizer.transform(df_test['CLMANT_TXT'])
 y_test_pred = clf.predict(x_test)
 print(x_test.shape)
 print(y_test_pred.shape)
