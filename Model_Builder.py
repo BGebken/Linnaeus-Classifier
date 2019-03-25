@@ -4,7 +4,10 @@ from pprint import pprint
 import numpy as np
 import pandas as pd
 
-df = pd.read_csv(r'Large_Training.csv', nrows=200, converters={'CNTNTN_CLSFCN_ID': lambda x: str(x)})
+df = pd.read_csv(r'Large_Training.csv', converters={'CNTNTN_CLSFCN_ID': lambda x: str(x)})
+df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
+df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].str.replace(r'\W+', ' ')
+df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
 
 # split the data frame into separate test, validation, and training data frames
 def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
@@ -53,24 +56,17 @@ print('Only %s of the %s elements in this vector are nonzero' % (np.count_nonzer
 
 vector = vectorizer.transform(['zipties zone'])
 print(vector.todense())
-
 from sklearn.linear_model import LogisticRegression
-
 # y_training contains the codes associated with training narratives
 y_training = TRAINING['CNTNTN_CLSFCN_ID']
-
 # create an instance of the LogisticRegression model and set regularization to 1.0
 clf = LogisticRegression(C=10)
-
 # fit the model to our training data (ie. calculate the weights)
 clf.fit(x_training, y_training)
-
 print(clf.coef_.shape)
 print(clf.coef_[0])
-
 # print the codes recognized by the classifier
 print(clf.classes_)
-
 # select the index of the code whose weights we want to examine
 # index 0 corresponds to code 100 (head not elsewhere classified)
 # index 3 corresponds to code 121 (ear, external)
@@ -94,6 +90,7 @@ print('It has a weight of:', clf.coef_[code_index, feature_index])
 from sklearn.metrics import accuracy_score, f1_score
 
 # Convert the validation narratives to a feature matrix
+VALIDATION['CLMANT_TXT'] = VALIDATION['CLMANT_TXT'].astype(str)
 x_validation = vectorizer.transform(VALIDATION['CLMANT_TXT'])
 
 # Generate predicted codes for our validation narratives
@@ -118,6 +115,7 @@ validation_accuracy = accuracy_score(y_validation, y_validation_pred)
 print('accuracy on validation data is: %s' % validation_accuracy)
 
 vectorizer2 = CountVectorizer(min_df=5, ngram_range=(1,2))
+TRAINING['CLMANT_TXT'] = TRAINING['CLMANT_TXT'].astype(str)
 vectorizer2.fit(TRAINING['CLMANT_TXT'])
 print(len(vectorizer2.vocabulary_))
 
@@ -151,7 +149,11 @@ clf = joblib.load(filename='LRclf.pkl')
 vectorizer = joblib.load(filename='vectorizer.pkl')
 
 
-df_test = pd.read_csv(r'RAW_TEST.csv', converters={'CLMANT_TXT': lambda x: str(x)})
+df_test = pd.read_csv(r'RAW_TEST.csv', nrows=9000, converters={'CLMANT_TXT': lambda x: str(x)})
+df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
+df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
+df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].str.replace(r'\W+', ' ')
+
 x_test = vectorizer.transform(df_test['CLMANT_TXT'])
 y_test_pred = clf.predict(x_test)
 print(x_test.shape)
