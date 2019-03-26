@@ -4,17 +4,37 @@ from pprint import pprint
 import numpy as np
 import pandas as pd
 
-df = pd.read_csv(r'FullTraining.csv')
+df = pd.read_csv(r'Large_Training.csv', converters={'CNTNTN_CLSFCN_ID': lambda x: str(x)})
+
+# replace anything in text that’s not a lowercase letter or a number or a space with a space
+# df['CNTNTN_CLSFCN_TXT'].str.replace('[^a-zA-Z0-9]', ' ')
+# df['CLMANT_TXT'].str.replace('[^a-zA-Z0-9]', ' ')
+
+df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
+df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].str.replace(r'\W+', ' ')
 
 # split the data frame into separate test, validation, and training data frames
-df_training = df[df['CLASS'] <= 'TRAINING']
-df_validation = df[df['CLASS'] == 'VALIDATION']
-df_test = df[df['CLASS'] == 'TEST']
+def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
+    np.random.seed(seed)
+    perm = np.random.permutation(df.index)
+    m = len(df.index)
+    train_end = int(train_percent * m)
+    validate_end = int(validate_percent * m) + train_end
+    train = df.ix[perm[:train_end]]
+    validate = df.ix[perm[train_end:validate_end]]
+    test = df.ix[perm[validate_end:]]
+    return train, validate, test
+
+
+df_training, df_validation, df_test = train_validate_test_split(df)
+
+
+# df_test = df[df['CLASS'] == 'TEST']
 
 print('''Data set sizes:
-    test: %s
-    validation: %s
-    training: %s''' % (len(df_test), len(df_validation), len(df_training)))
+    TEST: %s
+    VALIDATION: %s
+    TRAINING: %s''' % (len(df_test), len(df_validation), len(df_training)))
 
 # Data has now been imported
 
@@ -25,13 +45,13 @@ vectorizer = CountVectorizer()
 
 # Use the narratives in training data to create the vocabulary that will
 # be represented by  feature vectors. This is remembered by the vectorizer.
-vectorizer.fit(df_training['NARRATIVE'])
+vectorizer.fit(df_training['CNTNTN_CLSFCN_ID'])
 
 print('Our vectorizer has defined an input vector with %s elements' % len(vectorizer.vocabulary_))
 pprint(vectorizer.vocabulary_)
 
 # Convert the training narratives into their matrix representation.
-x_training = vectorizer.transform(df_training['NARRATIVE'])
+x_training = vectorizer.transform(df_training['CNTNTN_CLSFCN_ID'])
 
 print('''''''''''')
 print(x_training.shape)
@@ -47,7 +67,7 @@ print(vector.todense())
 from sklearn.linear_model import LogisticRegression
 
 # y_training contains the codes associated with training narratives
-y_training = df_training['CODE']
+y_training = df_training['CNTNTN_CLSFCN_TXT']
 
 # create an instance of the LogisticRegression model and set regularization to 1.0
 clf = LogisticRegression(C=10)
@@ -84,13 +104,13 @@ print('It has a weight of:', clf.coef_[code_index, feature_index])
 from sklearn.metrics import accuracy_score, f1_score
 
 # Convert the validation narratives to a feature matrix
-x_validation = vectorizer.transform(df_validation['NARRATIVE'])
+x_validation = vectorizer.transform(df_validation['CLMANT_TXT'])
 
 # Generate predicted codes for our validation narratives
 y_validation_pred = clf.predict(x_validation)
 
 # Calculate how accurately these match the true codes
-y_validation = df_validation['CODE']
+y_validation = df_validation['CNTNTN_CLSFCN_TXT']
 accuracy = accuracy_score(y_validation, y_validation_pred)
 macro_f1 = f1_score(y_validation, y_validation_pred, average='macro')
 print('accuracy = %s' % (accuracy))
@@ -108,17 +128,17 @@ validation_accuracy = accuracy_score(y_validation, y_validation_pred)
 print('accuracy on validation data is: %s' % validation_accuracy)
 
 vectorizer2 = CountVectorizer(min_df=5, ngram_range=(1,2))
-vectorizer2.fit(df_training['NARRATIVE'])
+vectorizer2.fit(df_training['CLMANT_TXT'])
 print(len(vectorizer2.vocabulary_))
 
-x_training = vectorizer2.transform(df_training['NARRATIVE'])
+x_training = vectorizer2.transform(df_training['CLMANT_TXT'])
 clf = LogisticRegression(C=1)
 clf.fit(x_training, y_training)
 y_training_pred = clf.predict(x_training)
 training_accuracy = accuracy_score(y_training, y_training_pred)
 print('accuracy on training data is: %s' % training_accuracy)
 
-x_validation = vectorizer2.transform(df_validation['NARRATIVE'])
+x_validation = vectorizer2.transform(df_validation['CLMANT_TXT'])
 y_validation_pred = clf.predict(x_validation)
 validation_accuracy = accuracy_score(y_validation, y_validation_pred)
 print('accuracy on validation data is: %s' % validation_accuracy)
@@ -142,7 +162,11 @@ vectorizer = joblib.load(filename='vectorizer.pkl')
 
 
 df = pd.read_csv(r'test.csv')
-x_test = vectorizer.transform(df_test['NARRATIVE'])
+# replace anything in text that’s not a lowercase letter or a number or a space with a space
+df['CNTNTN_CLSFCN_TXT'].str.replace('[^a-zA-Z0-9]', ' ')
+df['CLMANT_TXT'].str.replace('[^a-zA-Z0-9]', ' ')
+
+x_test = vectorizer.transform(df_test['CLMANT_TXT'])
 y_test_pred = clf.predict(x_test)
 print(x_test.shape)
 print(y_test_pred.shape)
