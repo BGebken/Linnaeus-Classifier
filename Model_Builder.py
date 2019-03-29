@@ -149,7 +149,7 @@ clf = joblib.load(filename='LRclf.pkl')
 vectorizer = joblib.load(filename='vectorizer.pkl')
 
 
-df_test = pd.read_csv(r'RAW_TEST.csv', nrows=9000, converters={'CLMANT_TXT': lambda x: str(x)})
+df_test = pd.read_csv(r'RAW_TEST.csv', nrows=100000, converters={'CLMANT_TXT': lambda x: str(x)})
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
 df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].str.replace(r'\W+', ' ')
