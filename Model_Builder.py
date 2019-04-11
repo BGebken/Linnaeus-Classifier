@@ -12,8 +12,8 @@ df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
 # split the data frame into separate test, validation, and training data frames
 def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
     np.random.seed(seed)
-    perm = np.random.permutation(df.index)
-    m = len(df.index)
+    perm = np.random.permutation(df.INDEX)
+    m = len(df.INDEX)
     train_end = int(train_percent * m)
     validate_end = int(validate_percent * m) + train_end
     train = df.ix[perm[:train_end]]
@@ -38,13 +38,13 @@ vectorizer = CountVectorizer()
 # Use the narratives in training data to create the vocabulary that will
 # be represented by  feature vectors. This is remembered by the vectorizer.
 #TRAINING.fit_transform(df['CLMANT_TXT'].values.astype('str'))  ## Even astype(str) would work
-vectorizer.fit(TRAINING['CNTNTN_CLSFCN_ID'])
+vectorizer.fit(TRAINING['CNTNTN_CLSFCN_ID'].astype(str))
 
 print('Our vectorizer has defined an input vector with %s elements' % len(vectorizer.vocabulary_))
 pprint(vectorizer.vocabulary_)
 
 # Convert the training narratives into their matrix representation.
-x_training = vectorizer.transform(TRAINING['CNTNTN_CLSFCN_TXT'])
+x_training = vectorizer.transform(TRAINING['CNTNTN_CLSFCN_TXT'].astype(str))
 
 print('''''''''''')
 print(x_training.shape)

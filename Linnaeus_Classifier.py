@@ -14,7 +14,7 @@ clf = joblib.load(filename='LRclf.pkl')
 # load the vectorizer
 vectorizer = joblib.load(filename='vectorizer.pkl')
 # Read the data
-df = pd.read_csv(r'RAW_TEST.csv', nrows=200000, converters={'CLMANT_TXT': lambda x: str(x)})
+df = pd.read_csv(r'RAW_TEST.csv', nrows=20000, converters={'CLMANT_TXT': lambda x: str(x)})
 df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
 # Predict Results
 x_test = vectorizer.transform(df['CLMANT_TXT'])
