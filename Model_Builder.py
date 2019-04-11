@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 
 df = pd.read_csv(r'Large_Training.csv', converters={'CNTNTN_CLSFCN_ID': lambda x: str(x)})
+#remove any rows that is missing values
+df = df.dropna()
+#clean up bad data
 df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].str.replace(r'\W+', ' ')
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
