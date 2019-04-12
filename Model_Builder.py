@@ -1,13 +1,9 @@
-
 from __future__ import print_function
 from pprint import pprint
 import numpy as np
 import pandas as pd
 
 df = pd.read_csv(r'Large_Training.csv', converters={'CNTNTN_CLSFCN_ID': lambda x: str(x)})
-#remove any rows that is missing values
-df = df.dropna()
-#clean up bad data
 df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].str.replace(r'\W+', ' ')
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
@@ -15,8 +11,8 @@ df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
 # split the data frame into separate test, validation, and training data frames
 def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
     np.random.seed(seed)
-    perm = np.random.permutation(df.INDEX)
-    m = len(df.INDEX)
+    perm = np.random.permutation(df.index)
+    m = len(df.index)
     train_end = int(train_percent * m)
     validate_end = int(validate_percent * m) + train_end
     train = df.ix[perm[:train_end]]
@@ -41,21 +37,18 @@ vectorizer = CountVectorizer()
 # Use the narratives in training data to create the vocabulary that will
 # be represented by  feature vectors. This is remembered by the vectorizer.
 #TRAINING.fit_transform(df['CLMANT_TXT'].values.astype('str'))  ## Even astype(str) would work
-vectorizer.fit(TRAINING['CNTNTN_CLSFCN_ID'].astype(str))
+vectorizer.fit(TRAINING['CNTNTN_CLSFCN_ID'])
 
 print('Our vectorizer has defined an input vector with %s elements' % len(vectorizer.vocabulary_))
-pprint(vectorizer.vocabulary_)
 
 # Convert the training narratives into their matrix representation.
-x_training = vectorizer.transform(TRAINING['CNTNTN_CLSFCN_TXT'].astype(str))
+x_training = vectorizer.transform(TRAINING['CNTNTN_CLSFCN_TXT'])
 
 print('''''''''''')
 print(x_training.shape)
 
 n_features = x_training.shape[1]
 dense_vector = x_training[0].todense()
-print('The vector representing our first training narrative looks like this:', dense_vector)
-print('Only %s of the %s elements in this vector are nonzero' % (np.count_nonzero(dense_vector), n_features))
 
 vector = vectorizer.transform(['zipties zone'])
 print(vector.todense())
@@ -151,8 +144,9 @@ clf = joblib.load(filename='LRclf.pkl')
 # load the vectorizer
 vectorizer = joblib.load(filename='vectorizer.pkl')
 
+# Above code builds model, the below code tests it
 
-df_test = pd.read_csv(r'RAW_TEST.csv', nrows=10000, converters={'CLMANT_TXT': lambda x: str(x)})
+df_test = pd.read_csv(r'RAW_TEST.csv', nrows=1000, converters={'CLMANT_TXT': lambda x: str(x)})
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].astype(str)
 df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
 df['CNTNTN_CLSFCN_TXT'] = df['CNTNTN_CLSFCN_TXT'].str.replace(r'\W+', ' ')
