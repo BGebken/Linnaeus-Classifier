@@ -21,6 +21,7 @@ def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=No
     return train, validate, test
 
 
+# split into the 3 data frames
 TRAINING, VALIDATION, TEST = train_validate_test_split(df)
 print('''Data set sizes:
     TEST: %s
@@ -33,10 +34,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Create an instance of the CountVectorizer object
 vectorizer = CountVectorizer()
-
 # Use the narratives in training data to create the vocabulary that will
 # be represented by  feature vectors. This is remembered by the vectorizer.
-#TRAINING.fit_transform(df['CLMANT_TXT'].values.astype('str'))  ## Even astype(str) would work
 vectorizer.fit(TRAINING['CNTNTN_CLSFCN_ID'])
 
 print('Our vectorizer has defined an input vector with %s elements' % len(vectorizer.vocabulary_))
