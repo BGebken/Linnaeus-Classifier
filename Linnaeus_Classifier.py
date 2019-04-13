@@ -1,20 +1,13 @@
 from __future__ import print_function
-from pprint import pprint
 import numpy as np
 import pandas as pd
-# something something
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import accuracy_score, f1_score
 from sklearn.externals import joblib
-# import the objects used by saved vectorizer and classifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.feature_extraction.text import CountVectorizer
 # load the classifier
 clf = joblib.load(filename='LRclf.pkl')
 # load the vectorizer
 vectorizer = joblib.load(filename='vectorizer.pkl')
 # Read the data
-df = pd.read_csv(r'RAW_TEST.csv', nrows=20000, converters={'CLMANT_TXT': lambda x: str(x)})
+df = pd.read_csv(r'CLEAN_TEST.csv', converters={'CLMANT_TXT': lambda x: str(x)})
 df['CLMANT_TXT'] = df['CLMANT_TXT'].str.replace(r'\W+', ' ')
 # Predict Results
 x_test = vectorizer.transform(df['CLMANT_TXT'])
