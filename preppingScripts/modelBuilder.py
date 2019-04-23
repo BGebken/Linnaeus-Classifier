@@ -34,7 +34,7 @@ vectorizer = CountVectorizer(min_df=10, ngram_range=(1,3), stop_words='english')
 X = vectorizer.fit_transform(df['CLMANT_TXT'])
 
 #This are the labels we are trying to predict
-y = np.array(df['newClass'])
+y = np.array(df['CNTNTN_CLSFCN_ID'])
 
 # Split into a training and testing set.
 X_train, X_test, y_train, y_test, i_train, i_test = train_test_split(X, y, df.index, test_size=0.7, random_state=42)
