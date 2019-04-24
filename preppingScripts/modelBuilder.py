@@ -14,8 +14,8 @@ from sklearn.ensemble import RandomForestClassifier
 df = pd.read_csv(sys.argv[1], index_col=0)
 
 
-# Long strings are usually a sign of missformated data so lets stick to fewer than 300 characters for training.
-df = df[(df['CLMANT_TXT'].str.len() < 300)]
+# Long strings are usually a sign of bad data so lets stick to fewer than 300 characters for training.
+df = df[df['CLMANT_TXT'].str.len() < 300]
 
 
 # Lets separate data points that dont have an approve label from our dataset.
@@ -71,12 +71,25 @@ print(precision_recall_fscore_support(y_test, y_pred, average='weighted'))
 
 print('\n')
 
-results = pd.DataFrame()
-results['label'] = y_test
-results['predictedLabel'] = y_pred
-results['claims'] = df['CLMANT_TXT'].loc[i_test]
-results['correctPred'] = results.apply(lambda x: int(x['label'] == x['predictedLabel']), 1)
-results = results[['claims', 'label', 'predictedLabel', 'correctPred']]
-results.to_csv('../data/testResults.csv')
+# get codes for prediction
+dfLabels = pd.read_excel('../data/Contention_Dictionary.xlsx')
+dLabels = {}
+for index, row in dfLabels.iterrows():
+    dLabels[row['New Contention Classification Text'].lower().strip()] = row['IDs']
+
+# Saving the test run.
+df1 = df[['CLMANT_TXT', 'CNTNTN_CLSFCN_ID', 'CNTNTN_CLSFCN_TXT', 'newClass']].loc[i_test]
+df1['predictedLabel'] = y_pred
+df1['predID'] = df1.apply(lambda x: dLabels[x['predictedLabel']], 1)
+df1['correctPred'] = df1.apply(lambda x: int(x['newClass'] == x['predictedLabel']), 1)
+df1.to_csv('../data/testResults.csv')
+
+# Running data with bad labels through the model.
+print('Predicting on data with unidentified labels. Saved in ../data/predictionOnDataWithBadLabels.csv')
+dfBad = vectorizer.transform(dfOut['CLMANT_TXT'])
+pBad = clf.predict(dfBad)
+dfOut['predLabel'] = pBad
+dfOut['predID'] = dfOut.apply(lambda x: dLabels[x['predLabel']], 1)
+dfOut.to_csv('../data/predictionOnDataWithBadLabels.csv')
 
 print('Done. A copy of the test results has been saved to testResults.csv in the data folder')

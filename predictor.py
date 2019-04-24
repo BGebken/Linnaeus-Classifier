@@ -4,6 +4,12 @@ import pandas as pd
 from sklearn.externals import joblib
 
 
+# get codes for prediction
+dfLabels = pd.read_excel('./data/Contention_Dictionary.xlsx')
+dLabels = {}
+for index, row in dfLabels.iterrows():
+    dLabels[row['New Contention Classification Text'].lower().strip()] = row['IDs']
+
 # load the vectorizer
 vectorizer = joblib.load(filename='modelsAndTransformations/vectorizer.pkl')
 # load the classifier
@@ -18,7 +24,10 @@ def main(arg=None):
         #Vectorize data
         X = vectorizer.transform(text)
         # predict value
-        d = {text[0] :clf.predict(X)[0]}
+        y = clf.predict(X)[0]
+        # predict code
+        y_code = dLabels[clf.predict(X)[0]]
+        d = {text[0] :[y, y_code]}
         # print string and value
         print(d)
     else:
