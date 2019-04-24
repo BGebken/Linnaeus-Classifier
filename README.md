@@ -42,13 +42,21 @@ Run *predictorBulk* followed by the name of the csv file containing the data.
 ### Test
 
 A file named **testResults.csv.** is included in the _data_ folder. It contains the following fields:
+
 *index*: index of test elements in larger set.
+
 *CLMANT_TXT*: The text from the 526 form.
+
 *CNTNTN_CLSFCN_TXT*: The classification assigned to it.
+
 *CNTNTN_CLSFCN_ID*: The ID for the assigned classification.
+
 *newClass*: the class that corresponds to *CNTNTN_CLSFCN_TXT* based on string similarity with the approved list of classifications.
+
 *predictedLabel*: The classification assigned by the model.
+
 *predID*: The ID corresponding to the the predicted classification.
+
 *correctPred*: Boolean for filtering based on whether or not the model made the right selection.
 
 
