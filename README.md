@@ -18,7 +18,7 @@ This will generate the models and automatically save them.
 ## How to use predictor.py
 Run *predictor.py* followed by the string of text you would like to analyze.
 -Example: **python predictor.py 'Ringing in my ear'**
--Output: **{'ringing in my ear': ['hearing loss', '3140']}**
+-Output: **{'ringing in my ear': ['hearing loss', 3140]}**
 
 ## How to use predictorBulk.py
 
