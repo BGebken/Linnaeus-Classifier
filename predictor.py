@@ -27,7 +27,7 @@ def main(arg=None):
         y = clf.predict(X)[0]
         # predict code
         y_code = dLabels[clf.predict(X)[0]]
-        d = {text[0] :[y, y_code]}
+        d = {text :[y, y_code]}
         # print string and value
         print(d)
     else:
