@@ -30,8 +30,8 @@ print('\n')
 # english stopwords and up to 3 word ngrams.
 vectorizer = CountVectorizer(min_df=10, ngram_range=(1,3), stop_words='english') 
 
-# This generates our feature space
-X = vectorizer.fit_transform(df['CLMANT_TXT'])
+# define the features
+X = df['CLMANT_TXT']
 
 #This are the labels we are trying to predict
 y = np.array(df['newClass'])
@@ -43,18 +43,17 @@ print('\n')
 print('Training model. This may take a while and there might be a few warnings but dont worry, it will work.')
 print('\n')
 
+# create the feature space
+# fit_transform to learn from only the training data
+# transform to apply the learned features from the training data to the test data
+X_train = vectorizer.fit_transform(X_train)
+X_test = vectorizer.transform(X_test)
 
 # Initialize a Logistic Regression Model.
 clf = LogisticRegression(multi_class='ovr', solver='lbfgs', n_jobs=-1, max_iter=1000)
 
 # Train a model
 clf.fit(X_train, y_train)
-
-# save the vectorizer object as vectorizer.pkl
-joblib.dump(vectorizer, filename='../modelsAndTransformations/vectorizer.pkl')
-
-# save the classifier object as LRclf.pkl
-joblib.dump(clf, filename='../modelsAndTransformations/LRclf.pkl')
 
 # Measure accuracy
 y_pred = clf.predict(X_test)
@@ -83,6 +82,21 @@ df1['predictedLabel'] = y_pred
 df1['predID'] = df1.apply(lambda x: dLabels[x['predictedLabel']], 1)
 df1['correctPred'] = df1.apply(lambda x: int(x['newClass'] == x['predictedLabel']), 1)
 df1.to_csv('../data/testResults.csv')
+
+# build the final model
+# after feature engineering, model selection, and hyperparameter tuning is complete
+# use all available data to maximize the use of data for the final classifier
+# i.e. fit the vectorizer and classifer on all of X (not only X_train)
+# since no futher experimentation is occuring
+X_vect = vectorizer.fit_transform(X)
+clf = LogisticRegression(multi_class='ovr', solver='lbfgs', n_jobs=-1, max_iter=1000)
+clf.fit(X_vect, y)
+
+# save the vectorizer object as vectorizer.pkl
+joblib.dump(vectorizer, filename='../modelsAndTransformations/vectorizer.pkl')
+
+# save the classifier object as LRclf.pkl
+joblib.dump(clf, filename='../modelsAndTransformations/LRclf.pkl')
 
 # Running data with bad labels through the model.
 print('Predicting on data with unidentified labels. Saved in ../data/predictionOnDataWithBadLabels.csv')
